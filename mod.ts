@@ -1,42 +1,42 @@
+import { CTFStorage } from './lib/storage.ts';
 
-export class AdventCodeFramework<T = string> {
-  private _helper: null;
-  private _storage: null;
+export class CTFFramework<T = string> {
+  public storage = new CTFStorage();
+  private registers: [string, ((self: CTFFramework<T>) => Promise<T>)][] = [];
 
-  private p1: T;
-  private p2: T;
-  private start: number;
-  private p1d: number;
-  private p2d: number;
-
-  public constructor(input: string, cwd: string) {
-    // this._helper.setInputFile(input);
-    // this._helper.setCurrentDirectory(cwd);
+  /**
+   * Register a function to be executed. Classes passed a reference to the CTFFramework.
+   *
+   * @param id A identifier to reference the function.
+   * @param v A function with a self reference to this {@link CTFFramework}.
+   */
+  public register(id: string, v: (self: CTFFramework<T>) => Promise<T>): void {
+    this.registers.push([id, v]);
   }
 
-  public async run(): Promise<void> {
-    this.start = performance.now();
-    this.p1 = await this.P1();
-    this.p1d = performance.now();
-    this.p2 = await this.P2();
-    this.p1d = performance.now();
+  /**
+   * Evaluate the CTF. This is called by the {@link CTF} static 'do' function.
+  */
+  public async _evaluate_ctf(): Promise<void> {
+    for (const fn of this.registers) {
+      const delta = performance.now();
+      const v = await fn[1](this);
+      const fdelta = performance.now() - delta;
+      console.info(fn[0], "|", `${fdelta.toFixed(3)}ms`.padEnd(15, ' '), "|->", v);
+    }
   }
-
-  public output(): void {
-    console.info('P1:', this.p1, 'Time', `${(this.start - this.p1d).toFixed(3)}ms`);
-    console.info('P2:', this.p2, 'Time', `${(this.p1d - this.p2d).toFixed(3)}ms`);
-  }
-
-  // deno-lint-ignore require-await
-  public async P1(): Promise<T> { return '' as T; }
-  // deno-lint-ignore require-await
-  public async P2(): Promise<T> { return '' as T; }
-
 }
 
-export class AdventCode {
-  public async do(advent: AdventCodeFramework): Promise<void> {
-    await advent.run();
-    advent.output();
+/**
+ * CTF Static Execution Assistant.
+ */
+export class CTF {
+  /**
+   * Execute a {@link CTFFramework} instance.
+   *
+   * @param advent The instance to execute.
+   */
+  public static async do(advent: CTFFramework): Promise<void> {
+    await advent._evaluate_ctf();
   }
 }
