@@ -19,7 +19,7 @@ export class CTFInputHelper {
     return this;
   }
 
-  public parse<T extends BuiltInInputRegExpIdentifier>(type: T): OutputTypes[T] {
+  public parse<T extends BuiltInInputRegExpIdentifier>(type: T = BuiltInInputRegExpIdentifier.EXPRESSION as T): OutputTypes[T] {
     return {
       [BuiltInInputRegExpIdentifier.STRING]: (this._content.match(/(.*)/) ?? [''])[0] as string,
       [BuiltInInputRegExpIdentifier.CHARACTERS]: (this._content.match(/(.)/g) ?? []) as string[],
